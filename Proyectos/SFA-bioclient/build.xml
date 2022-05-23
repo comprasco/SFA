@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE xml>
+<project basedir="." default="build" name="bioclient">
+  <property environment="env" />
+  <property name="debuglevel" value="source,lines,vars" />
+  <property name="target" value="1.8" />
+  <property name="source" value="1.8" />
+  <property name="dist.lib.dir" value="out/fat" />
+  <property name="dist.dir" value="." />
+  <property name="lib.dir" value="lib" />
+
+  <path id="external.libraryclasspath">
+    <fileset dir="lib">
+      <include name="**/*.jar" />
+    </fileset>
+  </path>
+  <path id="bioclient.classpath">
+    <pathelement location="out/production/bioclient" />
+    <path refid="external.libraryclasspath" />
+  </path>
+
+  <target name="clean">
+    <delete dir="out/production/bioclient" />
+  </target>
+  <target name="init">
+    <mkdir dir="out/production/bioclient" />
+    <copy includeemptydirs="false" todir="out/production/bioclient">
+      <fileset dir="src">
+        <exclude name="**/*.java" />
+      </fileset>
+    </copy>
+  </target>
+  <target depends="init" name="build">
+    <echo message="${ant.project.name}: ${ant.file}" />
+    <javac debug="true" debuglevel="${debuglevel}" destdir="out/production/bioclient" includeantruntime="false" source="${source}" target="${target}" encoding="iso-8859-1">
+      <src path="src" />
+      <classpath refid="bioclient.classpath" />
+    </javac>
+  </target>
+
+  <!-- Group all dependencies into a big dependency-all.jar -->
+  <target name="copy-dependencies">
+
+    <mkdir dir="${dist.lib.dir}" />
+
+    <jar jarfile="${dist.lib.dir}/dependencies-all.jar">
+      <zipgroupfileset dir="${lib.dir}">
+        <include name="**/*.jar" />
+      </zipgroupfileset>
+    </jar>
+  </target>
+
+  <!-- jar it, extract above dependency-all.jar and zip it with project files -->
+  <target name="jar" depends="build, copy-dependencies"
+          description="package, output to JAR">
+    <mkdir dir="${dist.dir}" />
+    <mkdir dir="${dist.lib.dir}" />
+    <jar jarfile="${dist.dir}/bioclient.jar" basedir="out/production/bioclient">
+      <manifest>
+        <attribute name="Main-Class" value="co.gov.supernotariado.bachue.dispositivos.app.Main" />
+      </manifest>
+      <zipfileset src="${dist.lib.dir}/dependencies-all.jar"
+                  excludes="META-INF/*.SF" />
+      </jar>
+  </target>
+</project>
